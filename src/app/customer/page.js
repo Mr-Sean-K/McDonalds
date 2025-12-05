@@ -14,12 +14,15 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Divider from '@mui/material/Divider';
-import Drawer from '@mui/material/Drawer';
+import MenuDrawer from '../components/MenuDrawer';
 import Paper from '@mui/material/Paper';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import CloseIcon from '@mui/icons-material/Close';
+import MenuIcon from '@mui/icons-material/Menu';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import { useCart } from '../logic/cartLogic';
 
 
 const menuData = {
@@ -45,7 +48,7 @@ export default function CustomerPage() {
   const [open, setOpen] = React.useState(false);
   const [selectedProduct, setSelectedProduct] = React.useState(null);
   const [modalOpen, setModalOpen] = React.useState(false);
-  const [cart, setCart] = React.useState([]);
+  const { cart, addItem, cartTotal } = useCart();
 
   const toggleDrawer = (newOpen) => () => setOpen(newOpen);
 
@@ -61,58 +64,18 @@ export default function CustomerPage() {
 
   const handleAddToCart = () => {
     if (selectedProduct) {
-      // Add item to cart. If exists, increment qty.
-      setCart((prev) => {
-        const existing = prev.find((p) => p.name === selectedProduct.name);
-        if (existing) {
-          return prev.map((p) => p.name === selectedProduct.name ? { ...p, qty: p.qty + 1 } : p);
-        }
-        return [...prev, { ...selectedProduct, qty: 1 }];
-      });
+      addItem(selectedProduct);
     }
     handleCloseModal();
   };
 
-  // Helper to compute cart total (numbers from strings like '€4.99')
-  const cartTotal = React.useMemo(() => {
-    const total = cart.reduce((sum, item) => {
-      const num = Number(String(item.price).replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
-      return sum + num * (item.qty || 1);
-    }, 0);
-    return `€${total.toFixed(2)}`;
-  }, [cart]);
-
-  const DrawerList = (
-    <Box sx={{ width: 250 }} role="presentation" onClick={toggleDrawer(false)}>
-      <List>
-        {['McMenu', 'View Cart'].map((text) => (
-          <ListItem key={text} disablePadding>
-            <ListItemButton>
-              <ListItemText primary={text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-      <Divider />
-      <List>
-        {['Log Out'].map((text) => (
-          <ListItem key={text} disablePadding>
-            <ListItemButton>
-              <ListItemText primary={text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-    </Box>
-  );
+  
 
   return (
     <Box sx={{ width: '100%', height: '100vh', padding: '16px', backgroundColor: '#fff', display: 'flex', flexDirection: 'column' }}>
       <Stack spacing={8} direction="row">
-        <Button onClick={toggleDrawer(true)}>Open drawer</Button>
-        <Drawer open={open} onClose={toggleDrawer(false)}>
-          {DrawerList}
-        </Drawer>
+        <Button onClick={toggleDrawer(true)}><MenuIcon /></Button>
+        <MenuDrawer open={open} onClose={toggleDrawer(false)} />
         <Typography variant="h4" align="center" gutterBottom sx={{ color: 'red', fontWeight: 'bold' }}>
           THE MCMENU
         </Typography>
@@ -172,7 +135,7 @@ export default function CustomerPage() {
         ))}
       </List>
 
-        /* Product Dialog on click */
+        {/* Product Dialog on click */}
       <Dialog open={modalOpen} onClose={handleCloseModal} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="h6" sx={{ color: 'red', fontWeight: 'bold' }}>
@@ -218,7 +181,7 @@ export default function CustomerPage() {
           )}
         </DialogContent>
       </Dialog>
-      /* Bottom Cart Button */
+      {/* Bottom Cart Button */}
       <Box
         sx={{
           position: 'fixed',
@@ -232,7 +195,7 @@ export default function CustomerPage() {
       >
         <Paper sx={{ display: 'flex', alignItems: 'center', width: '100%', maxWidth: 600, padding: '8px 12px' }} elevation={6}>
           <Button onClick={toggleDrawer(true)} sx={{ backgroundColor: 'white', textTransform: 'none' }}>
-            GO TO CART
+          <ShoppingCartIcon /> GO TO CART 
           </Button>
           <Box sx={{ flex: 1 }} />
           <Typography sx={{ fontWeight: 'bold', color: 'red', marginRight: 1 }}>{cartTotal}</Typography>
