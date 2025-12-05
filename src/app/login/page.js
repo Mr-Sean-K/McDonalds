@@ -5,6 +5,7 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
+import Link from 'next/link';
 
 export default function LoginPage() {
   return (
@@ -41,7 +42,7 @@ export default function LoginPage() {
           />
         </Box>
         <Typography variant="body2" align="center" color='red'>
-          Don't have an account? <br/> <a href="/register">Register Here!</a>
+          Don't have an account? <br/> <Link href="/register">Register here!</Link>
         </Typography>
         <Stack direction="row" spacing={2} justifyContent="center">
           <Box sx={{ width: '50px', height: '50px', backgroundColor: '#ccc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
