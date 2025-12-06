@@ -12,7 +12,8 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.6",
     "@mui/material": "^7.3.5",
-    "next": "16.0.5",
+    "mongodb": "^7.0.0",
+    "next": "^16.0.7",
     "react": "19.2.0",
     "react-dom": "19.2.0"
   },

@@ -28,13 +28,9 @@ export async function GET(req, res) {
   const { MongoClient } = require('mongodb');
 
 
-  const url = 'mongodb://root:example@localhost:27017/';
+  const url = 'mongodb+srv://admin:pass@task5.vfmocfc.mongodb.net/?appName=Task5';
 
   const client = new MongoClient(url);
-
- 
-
- 
 
   const dbName = 'app'; // database name
 
@@ -47,9 +43,14 @@ export async function GET(req, res) {
 
   const collection = db.collection('products'); // collection name
 
+  const query = {};
+    if (category) query.category = category;
+    if (name) query.name = name;
+    if (price) query.price = price;
+    if (image) query.image = image;
+    if (description) query.description = description; // build query
 
-
-  const findResult = await collection.find({"username": "sample@test.com"}).toArray();
+  const findResult = await collection.find(query).toArray();
 
   console.log('Found documents =>', findResult);
 
@@ -60,14 +61,14 @@ export async function GET(req, res) {
 
           valid = true;
 
-          console.log("login valid")
+          console.log("db pull successful")
 
   } else {
 
 
         valid = false;
 
-        console.log("login invalid")
+        console.log("db pull failed")
 
   }
 
@@ -80,6 +81,6 @@ export async function GET(req, res) {
 
   // at the end of the process we need to send something back.
 
-  return Response.json({ "data":"" + valid + ""})
+  return Response.json({ data: findResult, success: valid })
 
 }

@@ -25,30 +25,68 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useCart } from '../logic/cartLogic';
 
 
-const menuData = {
-  Burgers: [
-    { name: 'Big Mac', price: '€4.99', image: '/images/bigMac.png', description: 'Two all-beef patties, special sauce, lettuce, cheese, pickles, onions on a sesame seed bun.' },
-    { name: 'McChicken', price: '€2.49', image: '/images/mcChicken.png', description: 'Crispy chicken patty with lettuce and mayo on a toasted bun.' },
-    { name: 'Quarter Pounder', price: '€4.49', image: '/images/quarterPounder.png', description: 'A fresh beef patty topped with cheese, pickles, onions and mustard.' },
-  ],
-  Sides: [
-    { name: 'Fries', price: '€2.99', image: '/images/fries.png', description: 'Golden, crispy French fries seasoned to perfection.' },
-    { name: 'Hashbrowns', price: '€1.99', image: '/images/hashBrown.png', description: 'Crispy, golden hash browns perfect for breakfast.' },
-    { name: 'Fruit Bag', price: '€2.50', image: '/images/fruitBag.png', description: 'Assorted fresh fruits including apples, grapes, and berries.' },
-  ],
-  Drinks: [
-    { name: 'Coke', price: '€2.49', image: '/images/coke.png', description: 'Ice-cold Coca-Cola. Refreshing taste you love.' },
-    { name: 'Fanta', price: '€2.49', image: '/images/fanta.png', description: 'Vibrant Fanta with bold fruit flavors.' },
-    { name: 'Sprite', price: '€2.49', image: '/images/sprite.png', description: 'Crisp, clean, and refreshing lemon-lime flavor.' },
-  ],
-};
+
+
+// const menuData = {
+//   Burgers: [
+//     { name: data.name, price: '€4.99', image: '/images/bigMac.png', description: 'Two all-beef patties, special sauce, lettuce, cheese, pickles, onions on a sesame seed bun.' },
+//     { name: 'McChicken', price: '€2.49', image: '/images/mcChicken.png', description: 'Crispy chicken patty with lettuce and mayo on a toasted bun.' },
+//     { name: 'Quarter Pounder', price: '€4.49', image: '/images/quarterPounder.png', description: 'A fresh beef patty topped with cheese, pickles, onions and mustard.' },
+//   ],
+//   Sides: [
+//     { name: 'Fries', price: '€2.99', image: '/images/fries.png', description: 'Golden, crispy French fries seasoned to perfection.' },
+//     { name: 'Hashbrowns', price: '€1.99', image: '/images/hashBrown.png', description: 'Crispy, golden hash browns perfect for breakfast.' },
+//     { name: 'Fruit Bag', price: '€2.50', image: '/images/fruitBag.png', description: 'Assorted fresh fruits including apples, grapes, and berries.' },
+//   ],
+//   Drinks: [
+//     { name: 'Coke', price: '€2.49', image: '/images/coke.png', description: 'Ice-cold Coca-Cola. Refreshing taste you love.' },
+//     { name: 'Fanta', price: '€2.49', image: '/images/fanta.png', description: 'Vibrant Fanta with bold fruit flavors.' },
+//     { name: 'Sprite', price: '€2.49', image: '/images/sprite.png', description: 'Crisp, clean, and refreshing lemon-lime flavor.' },
+//   ],
+// };
  
+// if (GET.data =! undefined){
+//   let menuData = GET.data;
+// }
+
 
 export default function CustomerPage() {
   const [open, setOpen] = React.useState(false);
   const [selectedProduct, setSelectedProduct] = React.useState(null);
   const [modalOpen, setModalOpen] = React.useState(false);
+  const [menuData, setMenuData] = React.useState({});
   const { cart, addItem, cartTotal } = useCart();
+
+    React.useEffect(() => {
+    const fetchMenuData = async () => {
+      try {
+        const response = await fetch('/api/customer'); // call api endpoint
+        const result = await response.json();
+
+        if (result.success) {
+          // transform the data into the required format
+          const transformedData = result.data.reduce((acc, item) => {
+            const { category, name, price, image, description } = item;
+
+            if (!acc[category]) {
+              acc[category] = [];
+            }
+
+            acc[category].push({ name, price, image, description });
+            return acc;
+          }, {});
+
+          setMenuData(transformedData); // update state with the new data
+        } else {
+          console.error('Failed to fetch menu data');
+        }
+      } catch (error) {
+        console.error('Error fetching menu data:', error);
+      }
+    };
+
+    fetchMenuData();
+  }, []);
 
   const toggleDrawer = (newOpen) => () => setOpen(newOpen);
 
