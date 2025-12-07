@@ -13,11 +13,55 @@ import FormLabel from '@mui/material/FormLabel';
 import Paper from '@mui/material/Paper';
 import MenuDrawer from '../components/MenuDrawer';
 import MenuIcon from '@mui/icons-material/Menu';
+import { useCart } from '../logic/cartLogic';
 
 export default function CheckoutPage() {
   const [open, setOpen] = React.useState(false);
+  const [paymentMethod, setPaymentMethod] = React.useState('cash');
+  const [customerName, setCustomerName] = React.useState('');
+  const [address, setAddress] = React.useState('');
+  const [cardNumber, setCardNumber] = React.useState('');
+  const [orderNotes, setOrderNotes] = React.useState('');
+  const { cartTotal, setCart } = useCart();
 
   const toggleDrawer = (newOpen) => () => setOpen(newOpen);
+
+  React.useEffect(() => {
+    const fetchCart = async () => {
+      const response = await fetch('/api/cart');
+      const result = await response.json();
+      
+      if(result.success && result.data && result.data.items) {
+        setCart(result.data.items);
+        console.log('Loaded cart from database');
+      }
+    };
+    
+    fetchCart();
+  }, [setCart]);
+
+  const handleConfirmOrder = async () => {
+    const response = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customerName: customerName,
+        address: address,
+        paymentMethod: paymentMethod,
+        cardNumber: cardNumber,
+        orderNotes: orderNotes,
+        total: cartTotal
+      })
+    });
+    
+    const result = await response.json();
+    if(result.success) {
+      alert('Order confirmed!');
+      console.log('Order saved!', result.data);
+    } else {
+      alert('Failed to confirm order');
+    }
+  };
 
   return (
     <Box
@@ -59,6 +103,8 @@ export default function CheckoutPage() {
             label="Customer Name"
             variant="outlined"
             fullWidth
+            value={customerName}
+            onChange={(e) => setCustomerName(e.target.value)}
             sx={{ backgroundColor: '#f5f5f5' }}
           />
 
@@ -67,17 +113,32 @@ export default function CheckoutPage() {
             label="Address"
             variant="outlined"
             fullWidth
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
             sx={{ backgroundColor: '#f5f5f5' }}
           />
 
           {/* Payment Method */}
           <Box>
             <FormLabel sx={{ fontWeight: 'bold', color: 'red' }}>Payment Method:</FormLabel>
-            <RadioGroup row>
+            <RadioGroup row value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
               <FormControlLabel value="cash" control={<Radio />} label="Cash" />
               <FormControlLabel value="card" control={<Radio />} label="Card" />
             </RadioGroup>
           </Box>
+
+          {/* Card Number Field - only show if card is selected */}
+          {paymentMethod === 'card' && (
+            <TextField
+              label="Card Number"
+              variant="outlined"
+              fullWidth
+              placeholder="1234 5678 9012 3456"
+              value={cardNumber}
+              onChange={(e) => setCardNumber(e.target.value)}
+              sx={{ backgroundColor: '#f5f5f5' }}
+            />
+          )}
 
           {/* Order Notes */}
           <TextField
@@ -86,6 +147,8 @@ export default function CheckoutPage() {
             multiline
             rows={4}
             fullWidth
+            value={orderNotes}
+            onChange={(e) => setOrderNotes(e.target.value)}
             sx={{ backgroundColor: '#f5f5f5' }}
           />
 
@@ -94,13 +157,14 @@ export default function CheckoutPage() {
             variant="h6"
             sx={{ fontWeight: 'bold', color: 'red', textAlign: 'center' }}
           >
-            Total Price: X.XX EUR
+            Total Price: {cartTotal}
           </Typography>
 
           {/* Confirm Order Button */}
           <Button
             variant="contained"
             fullWidth
+            onClick={handleConfirmOrder}
             sx={{
               backgroundColor: 'red',
               color: 'white',

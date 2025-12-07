@@ -20,9 +20,23 @@ import MenuDrawer from '../components/MenuDrawer';
 import Link from 'next/link';
 
 export default function CartPage() {
-  const { cart, removeItem, updateQuantity, cartTotal, clearCart } = useCart();
+  const { cart, removeItem, updateQuantity, cartTotal, clearCart, setCart } = useCart();
   const [open, setOpen] = React.useState(false);
   const toggleDrawer = (nextOpen) => () => setOpen(nextOpen);
+
+  React.useEffect(() => {
+    const fetchCart = async () => {
+      const response = await fetch('/api/cart');
+      const result = await response.json();
+      
+      if(result.success && result.data && result.data.items) {
+        setCart(result.data.items);
+        console.log('Loaded cart from database');
+      }
+    };
+    
+    fetchCart();
+  }, [setCart]);
 
   return (
     <Box sx={{ width: '100%', minHeight: '100vh', padding: '16px', backgroundColor: '#fff', display: 'flex', justifyContent: 'center' }}>

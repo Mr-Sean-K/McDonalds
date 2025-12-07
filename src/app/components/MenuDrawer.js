@@ -9,16 +9,22 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import PropTypes from 'prop-types';
+import Link from 'next/link';
 
 export default function MenuDrawer({ open, onClose }) {
+  const menuItems = [
+    { text: 'McMenu', href: '/customer' },
+    { text: 'View Cart', href: '/cart' }
+  ];
+
   return (
     <Drawer open={open} onClose={onClose}>
       <Box sx={{ width: 250 }} role="presentation" onClick={onClose}>
         <List>
-          {['McMenu', 'View Cart'].map((text) => (
-            <ListItem key={text} disablePadding>
-              <ListItemButton>
-                <ListItemText primary={text} />
+          {menuItems.map((item) => (
+            <ListItem key={item.text} disablePadding>
+              <ListItemButton component={Link} href={item.href}>
+                <ListItemText primary={item.text} />
               </ListItemButton>
             </ListItem>
           ))}
