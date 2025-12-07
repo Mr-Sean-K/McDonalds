@@ -10,8 +10,24 @@ import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import PropTypes from 'prop-types';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function MenuDrawer({ open, onClose }) {
+  const [accType, setAccType] = React.useState(null);
+  const router = useRouter();
+
+  React.useEffect(() => {
+    const storedAccType = sessionStorage.getItem('acc_type');
+    setAccType(storedAccType);
+  }, []);
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('isLoggedIn');
+    sessionStorage.removeItem('acc_type');
+    sessionStorage.removeItem('username');
+    router.push('/login');
+  };
+
   const menuItems = [
     { text: 'McMenu', href: '/customer' },
     { text: 'View Cart', href: '/cart' }
@@ -28,16 +44,21 @@ export default function MenuDrawer({ open, onClose }) {
               </ListItemButton>
             </ListItem>
           ))}
+          {accType === 'manager' && (
+            <ListItem disablePadding>
+              <ListItemButton component={Link} href="/manager">
+                <ListItemText primary="Manager" />
+              </ListItemButton>
+            </ListItem>
+          )}
         </List>
         <Divider />
         <List>
-          {['Log Out'].map((text) => (
-            <ListItem key={text} disablePadding>
-              <ListItemButton>
-                <ListItemText primary={text} />
-              </ListItemButton>
-            </ListItem>
-          ))}
+          <ListItem disablePadding>
+            <ListItemButton onClick={handleLogout}>
+              <ListItemText primary="Log Out" />
+            </ListItemButton>
+          </ListItem>
         </List>
       </Box>
     </Drawer>

@@ -17,6 +17,21 @@ export default function ManagerPage() {
   const [openDrawer, setOpenDrawer] = React.useState(false);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [selectedOrder, setSelectedOrder] = React.useState(null);
+  const [orders, setOrders] = React.useState([]);
+
+  React.useEffect(() => {
+    const fetchOrders = async () => {
+      const response = await fetch('/api/manager');
+      const result = await response.json();
+      
+      if(result.success && result.data) {
+        setOrders(result.data);
+        console.log('Loaded orders from database');
+      }
+    };
+    
+    fetchOrders();
+  }, []);
 
   const toggleDrawer = (newOpen) => () => setOpenDrawer(newOpen);
 
@@ -30,11 +45,6 @@ export default function ManagerPage() {
     setSelectedOrder(null);
   };
 
-  // Example order data
-  const orders = [
-    { id: '12345', timestamp: '2025-12-06 12:34 PM', customerName: 'John Doe', email: 'john@example.com', products: ['Big Mac', 'Fries'], placedAt: '12:34 PM' },
-    { id: '67890', timestamp: '2025-12-06 01:45 PM', customerName: 'Jane Smith', email: 'jane@example.com', products: ['McChicken', 'Sprite'], placedAt: '01:45 PM' },
-  ];
 
   return (
     <Box
@@ -48,7 +58,7 @@ export default function ManagerPage() {
         alignItems: 'center',
       }}
     >
-      {/* Top Section with Menu Drawer */}
+      {/* Top Section with Title and Menu Drawer*/}
       <Stack direction="row" spacing={2} sx={{ width: '100%', alignItems: 'center' }}>
         <Button onClick={toggleDrawer(true)} sx={{ minWidth: 'auto' }}>
           <MenuIcon />
@@ -61,35 +71,44 @@ export default function ManagerPage() {
 
       {/* Order List */}
       <Box sx={{ width: '100%', maxWidth: 400, marginTop: 4 }}>
-        {orders.map((order) => (
-          <Paper
-            key={order.id}
-            elevation={2}
-            sx={{
-              padding: 2,
-              marginBottom: 2,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <Box>
-              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                Order ID: {order.id}
-              </Typography>
-              <Typography variant="body2" sx={{ color: '#666' }}>
-                {order.timestamp}
-              </Typography>
-            </Box>
-            <Button
-              variant="text"
-              sx={{ color: 'red', fontWeight: 'bold' }}
-              onClick={() => handleOrderClick(order)}
+        {orders.length === 0 ? (
+          <Typography sx={{ color: '#666', textAlign: 'center', paddingY: 4 }}>
+            No orders found.
+          </Typography>
+        ) : (
+          orders.map((order) => (
+            <Paper
+              key={order._id}
+              elevation={2}
+              sx={{
+                padding: 2,
+                marginBottom: 2,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
             >
-              View Order {'>'}
-            </Button>
-          </Paper>
-        ))}
+              <Box>
+                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                  {order.customerName}
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#666' }}>
+                  {order.timestamp ? new Date(order.timestamp).toLocaleString() : 'N/A'}
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'red', fontWeight: 'bold' }}>
+                  {order.total}
+                </Typography>
+              </Box>
+              <Button
+                variant="text"
+                sx={{ color: 'red', fontWeight: 'bold' }}
+                onClick={() => handleOrderClick(order)}
+              >
+                View Order {'>'}
+              </Button>
+            </Paper>
+          ))
+        )}
       </Box>
 
       {/* Dialog for Order Details */}
@@ -112,26 +131,27 @@ export default function ManagerPage() {
           {selectedOrder && (
             <Box sx={{ padding: 2 }}>
               <Typography variant="body1" sx={{ fontWeight: 'bold', marginBottom: 1 }}>
-                Order ID: {selectedOrder.id}
+                Customer: {selectedOrder.customerName}
               </Typography>
               <Typography variant="body2" sx={{ marginBottom: 1 }}>
-                Customer Name: {selectedOrder.customerName}
+                Address: {selectedOrder.address}
               </Typography>
               <Typography variant="body2" sx={{ marginBottom: 1 }}>
-                Email: {selectedOrder.email}
+                Payment Method: {selectedOrder.paymentMethod}
               </Typography>
+              {selectedOrder.cardNumber && (
+                <Typography variant="body2" sx={{ marginBottom: 1 }}>
+                  Card Number: {selectedOrder.cardNumber}
+                </Typography>
+              )}
               <Typography variant="body2" sx={{ marginBottom: 1 }}>
-                Products Ordered:
+                Order Notes: {selectedOrder.orderNotes || 'None'}
               </Typography>
-              <Box sx={{ marginLeft: 2 }}>
-                {selectedOrder.products.map((product, index) => (
-                  <Typography key={index} variant="body2">
-                    - {product}
-                  </Typography>
-                ))}
-              </Box>
-              <Typography variant="body2" sx={{ marginTop: 2 }}>
-                Order Placed At: {selectedOrder.placedAt}
+              <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'red', marginTop: 2 }}>
+                Total: {selectedOrder.total}
+              </Typography>
+              <Typography variant="body2" sx={{ marginTop: 1, color: '#666' }}>
+                Order Time: {selectedOrder.timestamp ? new Date(selectedOrder.timestamp).toLocaleString() : 'N/A'}
               </Typography>
             </Box>
           )}

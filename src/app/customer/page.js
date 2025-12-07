@@ -5,7 +5,6 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import Link from 'next/link';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListSubheader from '@mui/material/ListSubheader';
@@ -17,8 +16,8 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import CloseIcon from '@mui/icons-material/Close';
 import MenuIcon from '@mui/icons-material/Menu';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useCart } from '../logic/cartLogic';
+import { useRouter } from 'next/navigation';
 
 
 export default function CustomerPage() {
@@ -26,7 +25,9 @@ export default function CustomerPage() {
   const [selectedProduct, setSelectedProduct] = React.useState(null);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [menuData, setMenuData] = React.useState({});
+  const [temperature, setTemperature] = React.useState(null);
   const { cart, addItem, cartTotal } = useCart();
+  const router = useRouter();
 
   React.useEffect(() => {
     const fetchProducts = async () => {
@@ -54,6 +55,32 @@ export default function CustomerPage() {
     };
     
     fetchProducts();
+  }, []);
+
+  React.useEffect(() => {
+    const fetchWeather = async () => {
+      try {
+        const apiKey = 'd953ead614d77bba3bf0a80caeb990b3'; 
+        const city = 'Dublin';
+        const response = await fetch(
+          `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`
+        );
+        const data = await response.json();
+        
+        console.log('Weather API response:', data);
+        
+        if (data.main && data.main.temp) {
+          setTemperature(Math.round(data.main.temp));
+          console.log('Temperature set to:', Math.round(data.main.temp));
+        } else {
+          console.error('No temperature data in response');
+        }
+      } catch (error) {
+        console.error('Error fetching weather:', error);
+      }
+    };
+    
+    fetchWeather();
   }, []);
 
   const toggleDrawer = (newOpen) => () => setOpen(newOpen);
@@ -84,8 +111,8 @@ export default function CustomerPage() {
     
     const result = await response.json();
     if(result.success) {
-      alert('Cart saved to database!');
       console.log('Cart saved!', result.data);
+      router.push('/cart');
     } else {
       alert('Failed to save cart');
     }
@@ -93,11 +120,16 @@ export default function CustomerPage() {
 
   return (
     <Box sx={{ width: '100%', height: '100vh', padding: '16px', backgroundColor: '#fff', display: 'flex', flexDirection: 'column' }}>
-      <Stack spacing={8} direction="row">
+      <Stack spacing={2} direction="row" alignItems="center">
         <Button onClick={toggleDrawer(true)}><MenuIcon /></Button>
         <MenuDrawer open={open} onClose={toggleDrawer(false)} />
-        <Typography variant="h4" align="center" gutterBottom sx={{ color: 'red', fontWeight: 'bold' }}>
-          THE MCMENU
+        <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+          <Typography variant="h5" sx={{ color: 'red', fontWeight: 'bold' }}>
+            THE MCMENU
+          </Typography>
+        </Box>
+        <Typography variant="h6" sx={{ color: 'red', fontWeight: 'bold' }}>
+          {temperature !== null ? `${temperature}°C` : '—'}
         </Typography>
       </Stack>
       <List
@@ -220,14 +252,11 @@ export default function CustomerPage() {
         }}
       >
         <Paper sx={{ display: 'flex', alignItems: 'center', width: '100%', maxWidth: 600, padding: '8px 12px' }} elevation={6}>
-          <Button component={Link} href="/cart" sx={{ backgroundColor: 'white', textTransform: 'none' }}>
-          <ShoppingCartIcon /> GO TO CART 
+          <Button onClick={handleSaveCart} variant="contained" sx={{ backgroundColor: 'red', color: 'white' }}>
+            GO TO CART
           </Button>
           <Box sx={{ flex: 1 }} />
           <Typography sx={{ fontWeight: 'bold', color: 'red', marginRight: 1 }}>{cartTotal}</Typography>
-          <Button onClick={handleSaveCart} variant="contained" sx={{ backgroundColor: 'red', color: 'white' }}> {/* adds selected product to cart db */}
-            SAVE CART
-          </Button>
         </Paper>
       </Box>
     </Box>

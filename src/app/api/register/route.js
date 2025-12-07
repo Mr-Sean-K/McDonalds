@@ -1,11 +1,12 @@
 export async function POST(req) {
 
-  console.log("in the login api page")
+  console.log("in the register api page")
 
   // get the values that were sent across to us
   const body = await req.json()
   const email = body.email
   const password = body.password
+  const fullName = body.fullName
 
   // =================================================
   const { MongoClient } = require('mongodb');
@@ -20,27 +21,33 @@ export async function POST(req) {
   const db = client.db(dbName);
   const collection = db.collection('users'); // collection name
 
-  const findResult = await collection.findOne({ 
-    email: email, 
-    password: password 
-  });
-
-  console.log('Found user =>', findResult);
+  // Check if user already exists
+  const existingUser = await collection.findOne({ email: email });
 
   let valid = false
-  let accType = null
+  let message = ""
 
-  if(findResult){
-    valid = true;
-    accType = findResult.acc_type;
-    console.log("login successful")
-  } else {
+  if(existingUser){
     valid = false;
-    console.log("login failed")
+    message = "User already exists";
+    console.log("registration failed - user exists")
+  } else {
+    // Insert new user with default acc_type as 'customer'
+    const insertResult = await collection.insertOne({ 
+      email: email, 
+      password: password,
+      fullName: fullName,
+      acc_type: 'customer'
+    });
+    
+    console.log('Inserted user =>', insertResult);
+    valid = true;
+    message = "Registration successful";
+    console.log("registration successful")
   }
 
   //==========================================================
 
   // at the end of the process we need to send something back
-  return Response.json({ success: valid, acc_type: accType })
+  return Response.json({ success: valid, message: message })
 }

@@ -59,13 +59,13 @@ export default function CartPage() {
             )}
 
             {cart.map((item) => (
-              <ListItem key={item.name} sx={{ paddingY: 1 }}>
+              <ListItem key={item.name} sx={{ paddingY: 1, color: 'red', fontWeight: 'bold' }}>
                 <ListItemAvatar>
                   <Avatar variant="square" src={item.image} alt={item.name} sx={{ width: 72, height: 56, borderRadius: 1 }} />
                 </ListItemAvatar>
                 <ListItemText
                   primary={
-                    <Typography sx={{ fontWeight: 500 }}>{item.name}</Typography>
+                    <Typography sx={{ fontWeight: 'bold' }}>{item.name}</Typography>
                   }
                   secondary={
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, marginTop: 0.5 }}>

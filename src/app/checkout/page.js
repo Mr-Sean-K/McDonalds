@@ -75,7 +75,7 @@ export default function CheckoutPage() {
         alignItems: 'center',
       }}
     >
-      {/* Top Section with Menu Drawer */}
+      {/* Top Section with Page Title and Menu Drawer */}
       <Stack direction="row" spacing={2} sx={{ width: '100%', alignItems: 'center' }}>
         <Button onClick={toggleDrawer(true)} sx={{ minWidth: 'auto' }}>
           <MenuIcon />

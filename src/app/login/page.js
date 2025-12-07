@@ -1,13 +1,42 @@
 "use client";
 
+import * as React from 'react';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const router = useRouter();
+
+  const handleLogin = async () => {
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      sessionStorage.setItem('isLoggedIn', 'true');
+      sessionStorage.setItem('acc_type', result.acc_type);
+      
+      if(result.acc_type === 'manager') {
+        router.push('/manager');
+      } else {
+        router.push('/customer');
+      }
+    } else {
+      alert('Invalid credentials');
+    }
+  };
+
   return (
     <Box sx={{ width: '100%', height: '100vh', padding: '16px', backgroundColor: '#fff'}}>
      
@@ -26,7 +55,8 @@ export default function LoginPage() {
             fullWidth 
             placeholder="sample@gmail.com" 
             variant="filled" 
-            sx={{backgroundColor: 'yellow'}}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </Box>
         <Box>
@@ -38,17 +68,15 @@ export default function LoginPage() {
             type="password" 
             placeholder="**********" 
             variant="filled" 
-            sx={{backgroundColor: 'yellow'}}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
         </Box>
         <Typography variant="body2" align="center" color='red'>
           Don't have an account? <br/> <Link href="/register">Register here!</Link>
         </Typography>
         <Stack direction="row" spacing={2} justifyContent="center">
-          <Box sx={{ width: '50px', height: '50px', backgroundColor: '#ccc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            logo
-          </Box>
-          <Button variant="contained" size="large" sx={{ backgroundColor: 'red', width: '150px', height: '50px' }}>
+          <Button variant="contained" size="large" onClick={handleLogin} sx={{ backgroundColor: 'red', width: '150px', height: '50px' }}>
             LOGIN
           </Button>
         </Stack>
